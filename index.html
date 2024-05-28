@@ -1,16 +1,177 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Zenly</title>
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=YOUR_YANDEX_MAPS_API_KEY&lang=en_US" type="text/javascript"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .profile-button, .friends-button, .chat-button {
+            position: absolute;
+            bottom: 20px;
+            background-color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            z-index: 2;
+            cursor: pointer;
+        }
+        .profile-button {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .friends-button {
+            left: 20px;
+        }
+        .chat-button {
+            right: 20px;
+        }
+        .popup {
+            display: none;
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 3;
+        }
+        .popup img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+        .popup h2 {
+            margin: 10px 0 5px;
+            font-size: 18px;
+        }
+        .popup p {
+            margin: 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .popup.show {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <div id="main">
-        <h1>Зенли</h1>
-        <img src="https://i.stack.imgur.com/nCrtC.png">
-        <p>Lorem ipsum dolor sit amet,consectetur adipisicing elit.Accusantium ipsum magni,molestias.</p>
-        <button id="find">Найти</button>
+    <div id="map"></div>
+
+    <button class="friends-button" onclick="toggleFriends()">Friends</button>
+    <button class="profile-button" onclick="toggleProfile()">Profile</button>
+    <button class="chat-button" onclick="toggleChat()">Chat</button>
+
+    <div id="profile-popup" class="popup">
+        <img src="https://via.placeholder.com/50" alt="Avatar">
+        <h2 id="profile-name">User Name</h2>
+        <p id="profile-tag">@username</p>
     </div>
 
+    <div id="friends-popup" class="popup" style="left: 20px; transform: none;">
+        <h2>Friends List</h2>
+        <input type="text" placeholder="Search friends" onkeyup="searchFriends()">
+        <ul id="friends-list">
+            <!-- Dynamic friends list will be here -->
+        </ul>
+    </div>
+
+    <div id="chat-popup" class="popup" style="right: 20px; left: auto; transform: none;">
+        <h2>Chat</h2>
+        <!-- Chat interface will be here -->
+    </div>
+
+    <script>
+        let map;
+
+        ymaps.ready(init);
+
+        function init() {
+            map = new ymaps.Map("map", {
+                center: [55.76, 37.64], // Москва по умолчанию
+                zoom: 10
+            });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const pos = [position.coords.latitude, position.coords.longitude];
+                    map.setCenter(pos);
+                }, function() {
+                    alert('Geolocation failed');
+                });
+            } else {
+                alert('Geolocation not supported');
+            }
+        }
+
+        function toggleProfile() {
+            document.getElementById('profile-popup').classList.toggle('show');
+        }
+
+        function toggleFriends() {
+            document.getElementById('friends-popup').classList.toggle('show');
+        }
+
+        function toggleChat() {
+            document.getElementById('chat-popup').classList.toggle('show');
+        }
+
+        function searchFriends() {
+            const input = document.querySelector('#friends-popup input').value.toLowerCase();
+            const friends = document.querySelectorAll('#friends-list li');
+            friends.forEach(friend => {
+                if (friend.textContent.toLowerCase().includes(input)) {
+                    friend.style.display = '';
+                } else {
+                    friend.style.display = 'none';
+                }
+            });
+        }
+
+        Telegram.WebApp.ready();
+
+        // Simulate fetching profile data from Telegram
+        const userProfile = {
+            name: "John Doe",
+            tag: "@johndoe",
+            avatar: "https://via.placeholder.com/50"
+        };
+
+        document.getElementById('profile-name').textContent = userProfile.name;
+        document.getElementById('profile-tag').textContent = userProfile.tag;
+        document.querySelector('#profile-popup img').src = userProfile.avatar;
+
+        // Simulate fetching friends list
+        const friendsList = [
+            "Alice",
+            "Bob",
+            "Charlie",
+            "David",
+            "Eve"
+        ];
+
+        const friendsListContainer = document.getElementById('friends-list');
+        friendsList.forEach(friend => {
+            const li = document.createElement('li');
+            li.textContent = friend;
+            friendsListContainer.appendChild(li);
+        });
+    </script>
 </body>
 </html>
